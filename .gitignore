@@ -1,1 +1,6 @@
 *.job-tracker
+*temp
+*__pycache__
+*tests
+
+backend/app/.env-dev
