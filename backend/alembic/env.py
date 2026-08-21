@@ -20,6 +20,9 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata    # no idea what this is for
 
+# alembic revision --autogenerate -m "create extracted_jobs and filtered_jobs tables"
+# alembic upgrade head
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
