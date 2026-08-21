@@ -1,3 +1,4 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,7 +14,7 @@ class Settings(BaseSettings):
 
     # mysql+mysqlconnector://<user>:<password>@<host>[:<port>]/<dbname>
     model_config = SettingsConfigDict(
-        env_file='.env-dev', 
+        env_file=Path(__file__).resolve().parent / '.env-dev',     # TODO: change to .env later
         env_file_encoding='utf-8'
     )
 
