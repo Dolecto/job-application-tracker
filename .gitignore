@@ -2,5 +2,5 @@
 *temp
 *__pycache__
 *tests
-
+backend/alembic/versions
 backend/app/.env-dev
