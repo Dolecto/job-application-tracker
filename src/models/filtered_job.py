@@ -10,7 +10,7 @@ class FilteredJob(Base):
     __tablename__ = "filtered_jobs"
 
     id = Column(Integer, primary_key=True)
-    extracted_job_id = Column(Integer, ForeignKey("extracted_jobs.id"), nullable=False, unique=True)
+    extracted_job_id = Column(Integer, ForeignKey("extracted_jobs.id", ondelete="CASCADE"), nullable=False, unique=True)
     company_posting_link = Column(String(1024), nullable=True)
     location = Column(String(255), nullable=True)
     listed_salary = Column(String(255), nullable=True)
