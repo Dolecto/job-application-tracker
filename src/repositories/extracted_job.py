@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, insert
 from sqlalchemy.orm import Session
 from models.extracted_job import ExtractedJob, FilteringStatus
 
@@ -29,3 +29,11 @@ class ExtractedJobRepository:
         stmt = select(ExtractedJob).filter_by(filtering_status=filtering_status)
         rows = list(db.execute(stmt)) 
         return [row._asdict() for row in rows]  
+
+
+    # INSERT statement
+    @staticmethod
+    def insert_job(db: Session, extracted_job: ExtractedJob) -> bool:
+        stmt = insert(extracted_job)
+        res = bool(db.execute(stmt))
+        return res
