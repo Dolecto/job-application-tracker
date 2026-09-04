@@ -11,11 +11,9 @@ class ExtractedJobRepository:
         return db.get(ExtractedJob, id)
 
     @staticmethod
-    def get_all_jobs(db: Session) -> List[dict] | None:
+    def get_all_jobs(db: Session) -> List[ExtractedJob] | None:
         stmt = select(ExtractedJob)
-        rows = list(db.execute(stmt))
-        return [row._asdict() for row in rows]
-
+        return list(db.execute(stmt).scalars().all())
 
     # SELECT statements
     # NOTE: check if this is correct or if this can be more efficient
