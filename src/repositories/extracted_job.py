@@ -1,6 +1,9 @@
 from sqlalchemy import select, insert
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+
 from models.extracted_job import ExtractedJob, FilteringStatus
+from schemas.extracted_job import ExtractedJobCreate
 
 from typing import List
 
@@ -38,7 +41,17 @@ class ExtractedJobRepository:
 
     # INSERT statement
     @staticmethod
-    def insert_job(db: Session, extracted_job: ExtractedJob) -> bool:
-        stmt = insert(extracted_job)
-        res = bool(db.execute(stmt))
-        return res
+    def insert_job(db: Session, extracted_job: ExtractedJobCreate):
+        job = ExtractedJob(
+            job_title=extracted_job.job_title,
+            company_name=extracted_job.company_name,
+            emailed_posting_link=extracted_job.emailed_posting_link
+        )
+        db.add(job)
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            raise
+        db.refresh(job)
+        return job
