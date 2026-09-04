@@ -5,9 +5,16 @@ from models.extracted_job import ExtractedJob, FilteringStatus
 from typing import List
 
 class ExtractedJobRepository:
+    # General GET statements
     @staticmethod
     def get_job_by_id(db: Session, id: int) -> ExtractedJob | None:
         return db.get(ExtractedJob, id)
+
+    @staticmethod
+    def get_all_jobs(db: Session) -> List[dict] | None:
+        stmt = select(ExtractedJob)
+        rows = list(db.execute(stmt))
+        return [row._asdict() for row in rows]
 
 
     # SELECT statements
