@@ -2,6 +2,7 @@
 
 from pydantic import BaseModel
 from models.extracted_job import FilteringStatus 
+from datetime import datetime
 
 
 class ExtractedJobCreate(BaseModel):
@@ -17,7 +18,7 @@ class ExtractedJobResponse(BaseModel):
     emailed_posting_link: str
     emailed_posting_link_hash: str
     filtering_status: FilteringStatus 
-    created_at: str | None = None
+    created_at: datetime | None = None
 
     class Config:
         from_attributes = True
