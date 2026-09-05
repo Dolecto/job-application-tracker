@@ -49,3 +49,10 @@ def add_job(job: ExtractedJobCreate, db: Session = Depends(get_db)):
             status_code=409,
             detail="A job with this posting link already exists."
         )
+
+
+# PATCH operations
+@router.patch("", response_model=ExtractedJobResponse)
+@router.patch("/", response_model=ExtractedJobResponse)
+def patch():
+    pass
