@@ -56,3 +56,20 @@ def add_job(job: ExtractedJobCreate, db: Session = Depends(get_db)):
 @router.patch("/", response_model=ExtractedJobResponse)
 def patch():
     pass
+
+
+# DELETE operations
+# NOTE: I'm not sure we're gonna have a DELETE all, unless it's for testing...
+@router.delete("/all")
+def delete_all_jobs(db: Session = Depends(get_db)):
+    return repo.delete_all_jobs(db)
+
+@router.delete("/id/{id}")
+def delete_job_by_id(id: int, db: Session = Depends(get_db)):
+    job = repo.delete_job_by_id(db, id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job == True:
+        return f"Job {id} successfully deleted."
+    if job == False:
+        return f"Something went wrong when deleting job {id}."
