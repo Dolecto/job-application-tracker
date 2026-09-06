@@ -1,4 +1,4 @@
-from sqlalchemy import select, insert
+from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -17,6 +17,7 @@ class ExtractedJobRepository:
     def get_all_jobs(db: Session) -> List[ExtractedJob] | None:
         stmt = select(ExtractedJob)
         return list(db.execute(stmt).scalars().all())
+
 
     # SELECT statements
     # NOTE: check if this is correct or if this can be more efficient
@@ -52,3 +53,23 @@ class ExtractedJobRepository:
             raise
         db.refresh(job)
         return job
+
+
+    # DELETE statements
+    # NOTE: we're not implementing delete_all_jobs() for now...
+    @staticmethod
+    def delete_all_jobs(db: Session):
+        return "TODO"
+
+    @staticmethod
+    def delete_job_by_id(db: Session, id: int) -> bool | None:
+        job = db.get(ExtractedJob, id)
+        if job is None:
+            return None
+        try:
+            db.delete(job)
+        except:
+            db.rollback()
+            return False
+        db.commit()
+        return True
