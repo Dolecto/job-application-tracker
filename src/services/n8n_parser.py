@@ -8,6 +8,7 @@ NOTE: this is meant for LinkedIn.
 from schemas.extracted_job import ExtractedJobCreate
 
 import re
+import json
 from html import unescape
 from urllib.parse import urlparse
 
@@ -19,7 +20,24 @@ _VIEW_JOB_RE = re.compile(r"View job:\s*(\S+)")
 
 
 class ParserService:
-    def parse_json(self, text: str) -> list[ExtractedJobCreate]:
+    @staticmethod
+    def parsing_pipeline(json_path: str) -> list[ExtractedJobCreate]:
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        all_jobs = []
+
+        for email in data:
+            jobs = ParserService.parse_json(email.get("text", ""))
+            all_jobs = all_jobs + jobs
+
+        all_jobs = list(set(all_jobs))  # TODO: maybe there's a better way
+
+        return all_jobs
+
+
+    @classmethod
+    def parse_json(cls, text: str) -> list[ExtractedJobCreate]:
         """Extract job listings from the 'text' field of one email."""
         if not text:
             return []
@@ -58,13 +76,6 @@ class ParserService:
             jobs.append(job)
 
         return jobs
-
-    # TODO: Dedupe within batch
-
-    # TODO: Extract jobs from JSON (which may contain multiple emails)
-
-    # TODO: Read n8n JSON (line 236)
-
         
 
 
