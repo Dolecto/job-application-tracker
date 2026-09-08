@@ -6,6 +6,7 @@ from models.extracted_job import ExtractedJob, FilteringStatus
 from schemas.extracted_job import ExtractedJobCreate
 
 from typing import List
+import hashlib
 
 class ExtractedJobRepository:
     # General GET statements
@@ -37,9 +38,16 @@ class ExtractedJobRepository:
         return list(db.execute(stmt).scalars().all())
 
 
-    # INSERT statement
+    # INSERT statements
     @staticmethod
     def insert_job(db: Session, extracted_job: ExtractedJobCreate):
+        # We're checking the hash before insert, otherwise we'll have to loop 
+        # through inserts instead of using add_all()
+        link_hash = hashlib.sha256(extracted_job.emailed_posting_link.encode("utf-8")).hexdigest()
+        exists = db.execute(select(ExtractedJob.id).filter_by(emailed_posting_link_hash=link_hash))
+        if exists is not None:
+            return None
+
         job = ExtractedJob(
             job_title=extracted_job.job_title,
             company_name=extracted_job.company_name,
@@ -50,9 +58,51 @@ class ExtractedJobRepository:
             db.commit()
         except IntegrityError:
             db.rollback()
-            raise
+            return None
         db.refresh(job)
         return job
+
+    @staticmethod
+    def insert_jobs(db: Session, extracted_jobs: List[ExtractedJobCreate]):
+        seen_hashes = set()
+        candidates = []
+
+        # Batch deduplication
+        for extracted_job in extracted_jobs:
+            link_hash = hashlib.sha256(extracted_job.emailed_posting_link.encode("utf-8")).hexdigest()
+            if link_hash in seen_hashes:
+                continue
+            seen_hashes.add(link_hash)
+            candidates.append((extracted_job, link_hash))
+
+        # DB deduplication
+        existing_hashes = set(
+            db.scalars(
+                select(ExtractedJob.emailed_posting_link_hash).where(
+                    ExtractedJob.emailed_posting_link_hash.in_(seen_hashes)
+                )
+            ).all()
+        )
+        jobs = [row[0] for row in candidates if row[1] not in existing_hashes]
+        if not jobs:
+            return []
+
+        try:
+            inserted = db.scalars(insert(ExtractedJob).returning(ExtractedJob), jobs,).all()
+            db.commit()
+            return list(inserted)
+        except IntegrityError:
+            # Race condition fallback: retry one at a time
+            db.rollback()
+            inserted = []
+            for job in jobs:
+                try:
+                    obj = db.scalars(insert(ExtractedJob).returning(ExtractedJob), [job]).one()
+                    db.commit()
+                    inserted.append(obj)
+                except IntegrityError:
+                    db.rollback()
+            return inserted
 
 
     # DELETE statements
