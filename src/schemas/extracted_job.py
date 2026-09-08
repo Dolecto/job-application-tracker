@@ -10,6 +10,9 @@ class ExtractedJobCreate(BaseModel):
     company_name: str
     emailed_posting_link: str
 
+    def __hash__(self):
+        return hash(self.emailed_posting_link)
+
 
 class ExtractedJobResponse(BaseModel):
     id: int
