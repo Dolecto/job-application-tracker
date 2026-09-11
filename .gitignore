@@ -1,3 +1,7 @@
 .job-application-tracker
+.job_application_tracker.egg-info
 *__pycache__
 activate-env.bat
+.env-dev
+.env
+open-website.bat
